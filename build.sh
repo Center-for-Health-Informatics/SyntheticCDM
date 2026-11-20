@@ -19,7 +19,7 @@
 #   skopeo login chi-tools.uc.edu       (pushing only)
 # Pushing also needs trivy (vulnerability gate) and syft (SBOM).
 #
-# Environment overrides: REGISTRY, PUSH, FORCE (push from a dirty tree),
+# Environment overrides: REGISTRY, PUSH, PUSH_ATTEMPTS (default 4), FORCE (push from a dirty tree),
 # VOCAB_DIR (Athena vocabulary CSVs), CDM_DATABASE (default Testing),
 # RESTART_BUILDER (let this script resize the builder; refused over SSH).
 set -euo pipefail
@@ -30,6 +30,7 @@ REGISTRY=${REGISTRY:-chi-tools.uc.edu}
 NAME=syntheticcdm
 PLATFORM=linux/amd64          # Microsoft publishes SQL Server for amd64 only
 PUSH=${PUSH:-0}
+PUSH_ATTEMPTS=${PUSH_ATTEMPTS:-4}
 VOCAB_DIR=${VOCAB_DIR:-$HOME/Projects/ohdsi/OMOP-Synthea/work/vocab}
 CDM_DATABASE=${CDM_DATABASE:-Testing}
 BUILDER_MIN_MB=2048           # SQL Server refuses to start below ~2 GB
@@ -130,6 +131,18 @@ echo "scanning (fails on fixable HIGH/CRITICAL)"
 trivy image --quiet --input "$LAYOUT" --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
 syft -q "oci-dir:${LAYOUT}" -o "spdx-json=${OUT}/${NAME}-${VERSION}.spdx.json"
 
-for TAG in "${TAGS[@]}"; do echo "pushing ${IMAGE}:${TAG}"; container image push "${IMAGE}:${TAG}"; done
+# Large blobs (the ~1 GB data layer) sometimes fail mid-upload with an HTTP/2
+# stream error; a retry resumes quickly because finished blobs are skipped.
+push() {
+  local ref=$1 attempt
+  for attempt in $(seq 1 "$PUSH_ATTEMPTS"); do
+    container image push "$ref" && return 0
+    (( attempt < PUSH_ATTEMPTS )) || break
+    warn "push of $ref failed (attempt $attempt/$PUSH_ATTEMPTS); retrying in $((attempt * 10))s"
+    sleep $((attempt * 10))
+  done
+  die "could not push $ref after $PUSH_ATTEMPTS attempts"
+}
+for TAG in "${TAGS[@]}"; do echo "pushing ${IMAGE}:${TAG}"; push "${IMAGE}:${TAG}"; done
 rm -rf "$ARCHIVE" "$LAYOUT"
 echo; echo "SBOM: ${OUT}/${NAME}-${VERSION}.spdx.json"
