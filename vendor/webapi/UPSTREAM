@@ -1,0 +1,5 @@
+repo: ~/Projects/webapi (OHDSI WebAPI 3 CHI fork; Apache-2.0)
+branch: chi/3.0.x
+commit: e3340393a0d7ed925764f85660d247593b06894b
+path: chi/deploy/webapi/sql/20-results-ddl.sql (generated there by make-results-ddl.sh)
+schemas: results=webapi_results temp=webapi_temp vocabulary=dbo

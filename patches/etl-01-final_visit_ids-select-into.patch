@@ -1,0 +1,16 @@
+T-SQL has no CREATE TABLE ... AS SELECT; SqlRender's translate step would
+have rewritten it to SELECT ... INTO. (Same fix as chi/hades/final_visit_ids.sql.)
+
+--- a/vendor/etl/07-final_visit_ids.sql
++++ b/vendor/etl/07-final_visit_ids.sql
+@@ -3,8 +3,8 @@
+ GO
+ 
+ 
+-CREATE TABLE dbo.FINAL_VISIT_IDS AS
+-  SELECT encounter_id, VISIT_OCCURRENCE_ID_NEW
++SELECT encounter_id, VISIT_OCCURRENCE_ID_NEW
++  INTO dbo.FINAL_VISIT_IDS
+   FROM (
+     SELECT *,
+         ROW_NUMBER() OVER (PARTITION BY encounter_id ORDER BY PRIORITY) AS RN

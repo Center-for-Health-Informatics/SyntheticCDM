@@ -1,0 +1,4 @@
+repo: https://github.com/OHDSI/CommonDataModel.git
+commit: d83d48c2ba1b641879c33958903f630318421cb8
+path: inst/ddl/5.4/sql_server
+rendered: cdmDatabaseSchema=dbo

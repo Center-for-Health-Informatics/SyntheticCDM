@@ -1,0 +1,29 @@
+T-SQL requires a CTE to precede INSERT, not sit between the column list and
+SELECT. (Same fix as chi/hades/insert_person.sql.)
+
+--- a/vendor/etl/11-insert_person.sql
++++ b/vendor/etl/11-insert_person.sql
+@@ -1,4 +1,10 @@
+ 
++with mapped_states as (
++
++	select distinct l.location_id,l.city,states_map.state,l.zip
++	from dbo.location l
++	left join dbo.states_map states_map on l.state=states_map.state_abbreviation
++)
+ insert into dbo.person (
+ person_id,
+ gender_concept_id,
+@@ -19,12 +25,6 @@
+ ethnicity_source_value,
+ ethnicity_source_concept_id
+ )
+-with mapped_states as (
+-
+-	select distinct l.location_id,l.city,states_map.state,l.zip
+-	from dbo.location l
+-	left join dbo.states_map states_map on l.state=states_map.state_abbreviation
+-)
+ select
+ 	row_number()over(order by p.id),
+ 	case upper(p.gender)

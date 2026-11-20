@@ -1,0 +1,5 @@
+repo: https://github.com/OHDSI/ETL-Synthea.git
+commit: 9ee6eb1b933c70af7b80711332aa92327af1f7c5
+path: inst/sql/sql_server
+rendered for: CDM 5.4, Synthea 3.3.0, cdm_schema=dbo, synthea_schema=synthea
+patches: patches/etl-*.patch (applied after rendering)
