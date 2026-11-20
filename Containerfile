@@ -56,6 +56,12 @@ ARG SYNTHEA_DATE=20250101
 ENV ACCEPT_EULA=Y \
     MSSQL_PID=Developer \
     CDM_DATABASE=${CDM_DATABASE}
+# Drop the external-script (ML Services) launchpad and its network helper:
+# never used here, and their bundled Go runtime trips the vulnerability gate
+# (CVE-2026-111943 as of CU11).
+USER root
+RUN rm -f /opt/mssql-extensibility/bin/launchpad /opt/mssql/bin/launchpadd /opt/mssql/bin/setnetbr
+USER mssql
 COPY --from=load --chown=mssql:mssql /var/opt/mssql /var/opt/mssql
 COPY --chmod=0755 scripts/entrypoint.sh scripts/healthcheck.sh /opt/syntheticcdm/
 COPY --chmod=0644 scripts/app-login.sql /opt/syntheticcdm/

@@ -124,7 +124,7 @@ The `Containerfile` has three stages:
    - adds primary keys and indexes, then compresses everything (`sql/75`);
    - creates the schemas (`sql/80`) and the WebAPI results tables;
    - shrinks the files (`sql/90`) and shuts SQL Server down cleanly.
-3. **final** is the stock SQL Server image plus `/var/opt/mssql` from the load stage, along with [`scripts/entrypoint.sh`](scripts/entrypoint.sh).
+3. **final** is the stock SQL Server image plus `/var/opt/mssql` from the load stage, along with [`scripts/entrypoint.sh`](scripts/entrypoint.sh). It also removes the external-script launchpad binaries (`launchpad`, `launchpadd`, `setnetbr`), so `sp_execute_external_script` is not available. Their bundled Go runtime failed the vulnerability scan.
 
 The build uses no R. ETL-Synthea's SQL Server scripts are rendered once from their SqlRender templates and committed, so the image build needs no network access for SQL.
 
