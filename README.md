@@ -94,7 +94,7 @@ To run beside WebAPI and Atlas containers, put this container on the same networ
 ## Building
 
 ```sh
-./build.sh                  # -> chi-tools.uc.edu/syntheticcdm:{VERSION, VERSION-a<rev>, latest}
+./build.sh                  # -> chi-tools.uc.edu/syntheticcdm:{VERSION, VERSION-g<rev>, latest}
 ./test.sh                   # smoke test: data, logins, restart, sa password from env
 PUSH=1 ./build.sh           # also scans (trivy), writes an SBOM (syft), and pushes
 ```
@@ -106,7 +106,7 @@ PUSH=1 ./build.sh           # also scans (trivy), writes an SBOM (syft), and pus
   container builder stop && container builder delete && container builder start --memory 8g --cpus 4
   ```
 
-  `build.sh` never stops or starts `container` services on its own. Over SSH, the launchd domain is `user/<uid>` rather than `gui/<uid>`, so services started there get registered in the wrong place. `RESTART_BUILDER=1` lets the script resize the builder, but it refuses to do so over SSH.
+  `build.sh` starts the builder if it is stopped, but never over SSH: there, the launchd domain is `user/<uid>` rather than `gui/<uid>`, so services started there get registered in the wrong place. `RESTART_BUILDER=1` lets the script resize the builder, but it refuses to do so over SSH (unless `FORCE=1`).
 - An Athena vocabulary download in `VOCAB_DIR`. The default is `~/Projects/ohdsi/OMOP-Synthea/work/vocab`, and it must contain `CONCEPT.csv`, `CONCEPT_CPT4.csv` and the rest. `build.sh` copies it into the build context as APFS clones, which takes no time or extra space.
 
 To change the database name, use `CDM_DATABASE=MyCdm ./build.sh`. To change the Synthea population, seed or place, edit the `ARG`s in the `Containerfile`. Bump `VERSION` for every image you push.
